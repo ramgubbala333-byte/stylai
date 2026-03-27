@@ -1,20 +1,27 @@
 """
 Analysis endpoints — selfie upload, status polling, results retrieval.
+
+Fixes:
+- Eager load User.appearance_profiles before passing to analysis service
+- Rate limit: 5 uploads per user per hour
+- File size/type validation hardening
 """
 
+import time
 import uuid
+from collections import defaultdict
+from threading import Lock
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.api.v1.deps import get_current_user, get_current_user_optional
+from app.api.v1.deps import get_current_user
 from app.core.config import settings
 from app.core.database import get_db
 from app.models.models import AnalysisStatus, AppearanceProfile, StyleResult, User
 from app.schemas.schemas import (
-    AnalysisInitiateResponse,
     AppearanceProfileResponse,
     BeardUpdateRequest,
     FullAnalysisResponse,
@@ -24,6 +31,24 @@ from app.services.analysis_service import AnalysisService
 from app.utils.storage import get_storage_backend
 
 router = APIRouter(prefix="/analysis", tags=["Analysis"])
+
+# ── In-memory rate limiter (replace with Redis/slowapi in prod) ───────────────
+_rate_store: dict = defaultdict(list)
+_rate_lock = Lock()
+UPLOAD_LIMIT = 5
+UPLOAD_WINDOW = 3600
+
+
+def check_rate_limit(user_id: str):
+    now = time.time()
+    with _rate_lock:
+        _rate_store[user_id] = [t for t in _rate_store[user_id] if now - t < UPLOAD_WINDOW]
+        if len(_rate_store[user_id]) >= UPLOAD_LIMIT:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"Upload limit reached. Maximum {UPLOAD_LIMIT} uploads per hour.",
+            )
+        _rate_store[user_id].append(now)
 
 
 def get_analysis_service() -> AnalysisService:
@@ -37,47 +62,31 @@ async def upload_selfie(
     db: AsyncSession = Depends(get_db),
     analysis_service: AnalysisService = Depends(get_analysis_service),
 ):
-    """
-    Upload a selfie and trigger full appearance analysis.
-    Returns the complete analysis result synchronously (MVP approach).
-    
-    Production note: For scale, move analysis to a background task/queue
-    and return 202 Accepted with a job ID to poll.
-    """
-    # Validate file type
+    check_rate_limit(str(current_user.id))
+
     if file.content_type not in settings.ALLOWED_IMAGE_TYPES:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"File type not allowed. Accepted: {settings.ALLOWED_IMAGE_TYPES}",
+            status_code=422,
+            detail=f"File type not allowed. Accepted: {', '.join(settings.ALLOWED_IMAGE_TYPES)}",
         )
 
-    # Validate file size
     image_bytes = await file.read()
-    max_bytes = settings.MAX_IMAGE_SIZE_MB * 1024 * 1024
-    if len(image_bytes) > max_bytes:
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"File too large. Maximum size: {settings.MAX_IMAGE_SIZE_MB}MB",
-        )
+    if len(image_bytes) > settings.MAX_IMAGE_SIZE_MB * 1024 * 1024:
+        raise HTTPException(status_code=413, detail=f"File too large. Max {settings.MAX_IMAGE_SIZE_MB}MB.")
+    if len(image_bytes) < 1024:
+        raise HTTPException(status_code=422, detail="File appears empty or corrupted.")
 
-    # Eagerly load relationships needed for analysis
-    from sqlalchemy.orm import selectinload
+    # FIXED: eagerly load appearance_profiles relationship
     result = await db.execute(
-        select(User)
-        .where(User.id == current_user.id)
-        .options(selectinload(User.appearance_profiles))
+        select(User).where(User.id == current_user.id).options(selectinload(User.appearance_profiles))
     )
     user = result.scalar_one()
 
-    # Run full pipeline
     profile = await analysis_service.run_full_analysis(
-        db=db,
-        user=user,
-        image_bytes=image_bytes,
-        content_type=file.content_type,
+        db=db, user=user, image_bytes=image_bytes,
+        content_type=file.content_type or "image/jpeg",
     )
 
-    # Fetch linked style result
     result_q = await db.execute(
         select(StyleResult).where(StyleResult.appearance_profile_id == profile.id)
     )
@@ -87,7 +96,7 @@ async def upload_selfie(
         profile=AppearanceProfileResponse.model_validate(profile),
         result=StyleResultResponse.model_validate(style_result) if style_result else None,
         message="Analysis complete" if profile.analysis_status == AnalysisStatus.COMPLETED
-                else "Analysis failed — please try again with a clearer photo",
+                else "Analysis failed — please try again with a clearer front-facing photo",
     )
 
 
@@ -96,21 +105,14 @@ async def get_latest_profile(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Get the user's most recent appearance profile."""
     result = await db.execute(
         select(AppearanceProfile)
-        .where(
-            AppearanceProfile.user_id == current_user.id,
-            AppearanceProfile.is_active == True,
-        )
-        .order_by(AppearanceProfile.created_at.desc())
-        .limit(1)
+        .where(AppearanceProfile.user_id == current_user.id, AppearanceProfile.is_active == True)
+        .order_by(AppearanceProfile.created_at.desc()).limit(1)
     )
     profile = result.scalar_one_or_none()
-
     if not profile:
         raise HTTPException(status_code=404, detail="No analysis found. Upload a selfie to get started.")
-
     return profile
 
 
@@ -119,22 +121,13 @@ async def get_latest_result(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Get the user's most recent style recommendations."""
     result = await db.execute(
-        select(StyleResult)
-        .join(AppearanceProfile)
-        .where(
-            StyleResult.user_id == current_user.id,
-            AppearanceProfile.is_active == True,
-        )
-        .order_by(StyleResult.created_at.desc())
-        .limit(1)
+        select(StyleResult).where(StyleResult.user_id == current_user.id)
+        .order_by(StyleResult.created_at.desc()).limit(1)
     )
     style_result = result.scalar_one_or_none()
-
     if not style_result:
         raise HTTPException(status_code=404, detail="No results found. Complete an analysis first.")
-
     return style_result
 
 
@@ -145,33 +138,21 @@ async def get_result_by_id(
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
-        select(StyleResult).where(
-            StyleResult.id == result_id,
-            StyleResult.user_id == current_user.id,
-        )
+        select(StyleResult).where(StyleResult.id == result_id, StyleResult.user_id == current_user.id)
     )
     style_result = result.scalar_one_or_none()
-
     if not style_result:
         raise HTTPException(status_code=404, detail="Result not found")
-
     return style_result
 
 
 @router.get("/share/{share_token}", response_model=StyleResultResponse)
-async def get_shared_result(
-    share_token: str,
-    db: AsyncSession = Depends(get_db),
-):
-    """Public endpoint — view a shared style result without authentication."""
-    result = await db.execute(
-        select(StyleResult).where(StyleResult.share_token == share_token)
-    )
+async def get_shared_result(share_token: str, db: AsyncSession = Depends(get_db)):
+    """Public endpoint — no auth required."""
+    result = await db.execute(select(StyleResult).where(StyleResult.share_token == share_token))
     style_result = result.scalar_one_or_none()
-
     if not style_result:
         raise HTTPException(status_code=404, detail="Shared result not found or expired")
-
     return style_result
 
 
@@ -182,25 +163,18 @@ async def update_beard_info(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Allow users to self-report beard growth pattern.
-    CV beard detection is unreliable — user input produces better recommendations.
-    """
     result = await db.execute(
         select(AppearanceProfile).where(
-            AppearanceProfile.id == profile_id,
-            AppearanceProfile.user_id == current_user.id,
+            AppearanceProfile.id == profile_id, AppearanceProfile.user_id == current_user.id
         )
     )
     profile = result.scalar_one_or_none()
-
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
-
     profile.beard_coverage = payload.beard_coverage
-    profile.beard_density = payload.beard_density
+    if payload.beard_density:
+        profile.beard_density = payload.beard_density
     await db.flush()
-
     return profile
 
 
@@ -210,11 +184,8 @@ async def get_analysis_history(
     db: AsyncSession = Depends(get_db),
     limit: int = 10,
 ):
-    """Get the user's full analysis history, newest first."""
     result = await db.execute(
-        select(StyleResult)
-        .where(StyleResult.user_id == current_user.id)
-        .order_by(StyleResult.created_at.desc())
-        .limit(limit)
+        select(StyleResult).where(StyleResult.user_id == current_user.id)
+        .order_by(StyleResult.created_at.desc()).limit(min(limit, 50))
     )
     return result.scalars().all()

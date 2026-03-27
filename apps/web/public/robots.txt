@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Allow: /share/
+Disallow: /api/
+Disallow: /upload
+Disallow: /results
+Disallow: /profile
+Disallow: /onboarding
+Disallow: /auth/
+
+Sitemap: https://yourdomain.com/sitemap.xml

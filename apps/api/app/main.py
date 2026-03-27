@@ -1,15 +1,15 @@
 """
 StylAI — FastAPI Application Entry Point
-
-Initializes the FastAPI app, registers middleware, mounts routers,
-and configures startup/shutdown lifecycle events.
 """
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api.v1.router import api_router
 from app.core.config import settings
@@ -19,16 +19,9 @@ from app.core.logging import setup_logging
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifecycle handler — runs setup on startup, teardown on shutdown."""
     setup_logging()
-
-    # Future: warm up CV models here so first request isn't slow
-    # from app.services.cv.face_analyzer import FaceAnalyzer
-    # await FaceAnalyzer.preload_models()
-
+    Path(settings.LOCAL_STORAGE_PATH).mkdir(parents=True, exist_ok=True)
     yield
-
-    # Cleanup: close DB connections, flush queues, etc.
     await engine.dispose()
 
 
@@ -42,7 +35,7 @@ def create_application() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # ─── Middleware ──────────────────────────────────────────────────────────
+    # ── Middleware ────────────────────────────────────────────────────────────
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.ALLOWED_ORIGINS,
@@ -52,13 +45,31 @@ def create_application() -> FastAPI:
     )
     app.add_middleware(GZipMiddleware, minimum_size=1000)
 
-    # ─── Routers ─────────────────────────────────────────────────────────────
+    # ── Routers ───────────────────────────────────────────────────────────────
     app.include_router(api_router, prefix="/api/v1")
 
-    # ─── Health check ─────────────────────────────────────────────────────────
+    # ── Static file serving ───────────────────────────────────────────────────
+    # Serves uploaded selfies at /static/<key> in local dev.
+    # In production with S3, files are served directly from S3 URLs.
+    if settings.STORAGE_BACKEND == "local":
+        storage_path = Path(settings.LOCAL_STORAGE_PATH)
+        storage_path.mkdir(parents=True, exist_ok=True)
+        app.mount("/static", StaticFiles(directory=str(storage_path)), name="static")
+
+    # ── Health check ──────────────────────────────────────────────────────────
     @app.get("/health", tags=["System"])
     async def health_check():
-        return {"status": "ok", "version": "0.1.0", "service": "stylai-api"}
+        return {"status": "ok", "version": "0.1.0", "environment": settings.ENVIRONMENT}
+
+    # ── Global exception handler ──────────────────────────────────────────────
+    @app.exception_handler(Exception)
+    async def global_exception_handler(request: Request, exc: Exception):
+        import logging
+        logging.getLogger(__name__).exception(f"Unhandled error on {request.url}: {exc}")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "An internal error occurred. Please try again."},
+        )
 
     return app
 

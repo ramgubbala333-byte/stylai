@@ -276,7 +276,7 @@ export default function ProfilePage() {
                   <HistoryCard
                     key={result.id}
                     result={result}
-                    onView={() => router.push("/results")}
+                    onView={() => router.push(`/results?id=${result.id}`)}
                   />
                 ))}
               </div>
