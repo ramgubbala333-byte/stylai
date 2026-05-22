@@ -1,10 +1,9 @@
 """Initial schema
 
 Revision ID: 001_initial
-Revises: 
-Create Date: 2024-01-01 00:00:00
+Revises:
+Create Date: 2024-01-01
 """
-
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
@@ -16,6 +15,10 @@ depends_on = None
 
 
 def upgrade() -> None:
+    # Drop everything cleanly first (idempotent)
+    op.execute("DROP TABLE IF EXISTS style_results CASCADE")
+    op.execute("DROP TABLE IF EXISTS appearance_profiles CASCADE")
+    op.execute("DROP TABLE IF EXISTS users CASCADE")
     op.execute("DROP TYPE IF EXISTS gender CASCADE")
     op.execute("DROP TYPE IF EXISTS faceshape CASCADE")
     op.execute("DROP TYPE IF EXISTS skintone CASCADE")
@@ -23,6 +26,8 @@ def upgrade() -> None:
     op.execute("DROP TYPE IF EXISTS hairtexture CASCADE")
     op.execute("DROP TYPE IF EXISTS hairdensity CASCADE")
     op.execute("DROP TYPE IF EXISTS analysisstatus CASCADE")
+
+    # Create enums
     op.execute("CREATE TYPE gender AS ENUM ('male', 'female', 'non_binary', 'prefer_not_to_say')")
     op.execute("CREATE TYPE faceshape AS ENUM ('oval', 'round', 'square', 'heart', 'diamond', 'oblong', 'triangle', 'unknown')")
     op.execute("CREATE TYPE skintone AS ENUM ('fair', 'light', 'medium', 'olive', 'tan', 'deep', 'rich')")
@@ -31,41 +36,39 @@ def upgrade() -> None:
     op.execute("CREATE TYPE hairdensity AS ENUM ('thin', 'medium', 'thick')")
     op.execute("CREATE TYPE analysisstatus AS ENUM ('pending', 'processing', 'completed', 'failed')")
 
-    op.create_table(
-        "users",
+    op.create_table("users",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("email", sa.String(255), nullable=False, unique=True),
         sa.Column("hashed_password", sa.String(255), nullable=False),
         sa.Column("full_name", sa.String(255)),
-        sa.Column("gender", sa.Enum("male", "female", "non_binary", "prefer_not_to_say", name="gender")),
+        sa.Column("gender", sa.Enum("male","female","non_binary","prefer_not_to_say", name="gender", create_type=False)),
         sa.Column("date_of_birth", sa.String(10)),
-        sa.Column("is_active", sa.Boolean, default=True),
-        sa.Column("is_verified", sa.Boolean, default=False),
+        sa.Column("is_active", sa.Boolean, server_default="true"),
+        sa.Column("is_verified", sa.Boolean, server_default="false"),
         sa.Column("created_at", sa.DateTime, server_default=sa.func.now()),
         sa.Column("updated_at", sa.DateTime, server_default=sa.func.now()),
     )
     op.create_index("ix_users_email", "users", ["email"])
 
-    op.create_table(
-        "appearance_profiles",
+    op.create_table("appearance_profiles",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=False),
-        sa.Column("is_active", sa.Boolean, default=True),
+        sa.Column("is_active", sa.Boolean, server_default="true"),
         sa.Column("selfie_url", sa.String(500), nullable=False),
         sa.Column("selfie_key", sa.String(500), nullable=False),
-        sa.Column("analysis_status", sa.Enum("pending", "processing", "completed", "failed", name="analysisstatus")),
+        sa.Column("analysis_status", sa.Enum("pending","processing","completed","failed", name="analysisstatus", create_type=False), server_default="pending"),
         sa.Column("analysis_error", sa.Text),
         sa.Column("analyzed_at", sa.DateTime),
-        sa.Column("face_shape", sa.Enum("oval", "round", "square", "heart", "diamond", "oblong", "triangle", "unknown", name="faceshape")),
+        sa.Column("face_shape", sa.Enum("oval","round","square","heart","diamond","oblong","triangle","unknown", name="faceshape", create_type=False)),
         sa.Column("face_shape_confidence", sa.Float),
         sa.Column("face_landmark_ratios", postgresql.JSONB),
-        sa.Column("skin_tone", sa.Enum("fair", "light", "medium", "olive", "tan", "deep", "rich", name="skintone")),
-        sa.Column("skin_undertone", sa.Enum("cool", "warm", "neutral", name="skinundertone")),
+        sa.Column("skin_tone", sa.Enum("fair","light","medium","olive","tan","deep","rich", name="skintone", create_type=False)),
+        sa.Column("skin_undertone", sa.Enum("cool","warm","neutral", name="skinundertone", create_type=False)),
         sa.Column("skin_lab_values", postgresql.JSONB),
         sa.Column("contrast_level", sa.Float),
         sa.Column("hair_color_hex", sa.String(7)),
-        sa.Column("hair_texture", sa.Enum("straight", "wavy", "curly", "coily", "unknown", name="hairtexture")),
-        sa.Column("hair_density", sa.Enum("thin", "medium", "thick", name="hairdensity")),
+        sa.Column("hair_texture", sa.Enum("straight","wavy","curly","coily","unknown", name="hairtexture", create_type=False)),
+        sa.Column("hair_density", sa.Enum("thin","medium","thick", name="hairdensity", create_type=False)),
         sa.Column("hairline_type", sa.String(50)),
         sa.Column("beard_coverage", sa.String(50)),
         sa.Column("beard_density", sa.String(50)),
@@ -74,8 +77,7 @@ def upgrade() -> None:
     )
     op.create_index("ix_appearance_profiles_user_id", "appearance_profiles", ["user_id"])
 
-    op.create_table(
-        "style_results",
+    op.create_table("style_results",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=False),
         sa.Column("appearance_profile_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("appearance_profiles.id"), nullable=False),
@@ -88,7 +90,7 @@ def upgrade() -> None:
         sa.Column("outfit_directions", postgresql.JSONB),
         sa.Column("clothing_details", postgresql.JSONB),
         sa.Column("narrative_summary", sa.Text),
-        sa.Column("engine_version", sa.String(20), default="1.0.0"),
+        sa.Column("engine_version", sa.String(20), server_default="1.0.0"),
         sa.Column("share_token", sa.String(64), unique=True),
         sa.Column("result_card_url", sa.String(500)),
         sa.Column("created_at", sa.DateTime, server_default=sa.func.now()),
