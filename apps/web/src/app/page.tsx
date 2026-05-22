@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, Scan, Palette, Scissors, Shirt } from "lucide-react";
 import { Logo, Badge, Button } from "@/components/ui";
