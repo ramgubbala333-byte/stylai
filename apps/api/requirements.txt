@@ -5,7 +5,7 @@ python-multipart==0.0.9       # File upload support
 
 # ─── Database ─────────────────────────────────────────────────────────────────
 sqlalchemy[asyncio]==2.0.30
-asyncpg==0.29.0               # Async PostgreSQL driver
+asyncpg==0.30.0               # Async PostgreSQL driver
 alembic==1.13.1               # Database migrations
 psycopg2-binary==2.9.9        # Sync driver for Alembic
 
@@ -21,9 +21,9 @@ pydantic==2.7.1
 pydantic-settings==2.2.1
 
 # ─── Computer Vision ──────────────────────────────────────────────────────────
-opencv-python-headless==4.9.0.80
+opencv-python-headless==4.10.0.84
 mediapipe==0.10.35
-Pillow==10.3.0
+Pillow==10.4.0
 numpy==1.26.4
 scikit-learn==1.4.2           # Color clustering (KMeans for skin tone)
 scipy==1.13.0                 # Color distance calculations
