@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Palette, Scissors, Shirt, Share2, RefreshCw, ChevronRight, Check, X, ChevronDown } from "lucide-react";
 import { PageShell } from "@/components/layout/Navbar";
@@ -118,7 +118,7 @@ function BeardPanel({ profileId, current }: { profileId: string; current?: strin
   );
 }
 
-export default function ResultsPage() {
+function ResultsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const resultId = searchParams.get("id");
@@ -245,5 +245,12 @@ export default function ResultsPage() {
         </div>
       </div>
     </PageShell>
+  );
+}
+export default function ResultsPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: "100vh", background: "#0D0D0F" }} />}>
+      <ResultsContent />
+    </Suspense>
   );
 }
