@@ -1,4 +1,4 @@
-"""Initial schema — users, appearance_profiles, style_results
+"""Initial schema
 
 Revision ID: 001_initial
 Revises: 
@@ -16,16 +16,14 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # ── Enums ────────────────────────────────────────────────────────────────
-op.execute("CREATE TYPE IF NOT EXISTS gender AS ENUM ('male', 'female', 'non_binary', 'prefer_not_to_say')")
-op.execute("CREATE TYPE IF NOT EXISTS faceshape AS ENUM ('oval', 'round', 'square', 'heart', 'diamond', 'oblong', 'triangle', 'unknown')")
-op.execute("CREATE TYPE IF NOT EXISTS skintone AS ENUM ('fair', 'light', 'medium', 'olive', 'tan', 'deep', 'rich')")
-op.execute("CREATE TYPE IF NOT EXISTS skinundertone AS ENUM ('cool', 'warm', 'neutral')")
-op.execute("CREATE TYPE IF NOT EXISTS hairtexture AS ENUM ('straight', 'wavy', 'curly', 'coily', 'unknown')")
-op.execute("CREATE TYPE IF NOT EXISTS hairdensity AS ENUM ('thin', 'medium', 'thick')")
-op.execute("CREATE TYPE IF NOT EXISTS analysisstatus AS ENUM ('pending', 'processing', 'completed', 'failed')")
+    op.execute("CREATE TYPE IF NOT EXISTS gender AS ENUM ('male', 'female', 'non_binary', 'prefer_not_to_say')")
+    op.execute("CREATE TYPE IF NOT EXISTS faceshape AS ENUM ('oval', 'round', 'square', 'heart', 'diamond', 'oblong', 'triangle', 'unknown')")
+    op.execute("CREATE TYPE IF NOT EXISTS skintone AS ENUM ('fair', 'light', 'medium', 'olive', 'tan', 'deep', 'rich')")
+    op.execute("CREATE TYPE IF NOT EXISTS skinundertone AS ENUM ('cool', 'warm', 'neutral')")
+    op.execute("CREATE TYPE IF NOT EXISTS hairtexture AS ENUM ('straight', 'wavy', 'curly', 'coily', 'unknown')")
+    op.execute("CREATE TYPE IF NOT EXISTS hairdensity AS ENUM ('thin', 'medium', 'thick')")
+    op.execute("CREATE TYPE IF NOT EXISTS analysisstatus AS ENUM ('pending', 'processing', 'completed', 'failed')")
 
-    # ── users ────────────────────────────────────────────────────────────────
     op.create_table(
         "users",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
@@ -41,7 +39,6 @@ op.execute("CREATE TYPE IF NOT EXISTS analysisstatus AS ENUM ('pending', 'proces
     )
     op.create_index("ix_users_email", "users", ["email"])
 
-    # ── appearance_profiles ───────────────────────────────────────────────────
     op.create_table(
         "appearance_profiles",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
@@ -70,7 +67,6 @@ op.execute("CREATE TYPE IF NOT EXISTS analysisstatus AS ENUM ('pending', 'proces
     )
     op.create_index("ix_appearance_profiles_user_id", "appearance_profiles", ["user_id"])
 
-    # ── style_results ─────────────────────────────────────────────────────────
     op.create_table(
         "style_results",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
