@@ -85,7 +85,7 @@ export default function ProfilePage() {
             </div>
 
             {/* New analysis CTA */}
-            <GlassCard className="p-5 flex items-center justify-between gap-4 mb-10" style={{background:"rgba(201,169,110,0.04)",borderColor:"rgba(201,169,110,0.15)"} as any}>
+            <div className="p-5 flex items-center justify-between gap-4 mb-10 rounded-2xl" style={{background:"rgba(201,169,110,0.04)",border:"1px solid rgba(201,169,110,0.15)"}}>
               <div>
                 <p className="text-sm font-medium" style={{color:"#F5F2ED"}}>Run a new analysis</p>
                 <p className="text-xs mt-0.5" style={{color:"rgba(245,242,237,0.4)"}}>Upload a new photo for updated recommendations</p>
