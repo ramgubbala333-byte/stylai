@@ -105,7 +105,7 @@ function BeardPanel({profileId,current}:{profileId:string;current?:string|null})
 }
 
 function ResultsSkeleton() {
-  return <div className="space-y-6">{[140,200,260,200].map((h,i)=><LoadingSkeleton key={i} className={`h-[${h}px] w-full`} style={{height:`${h}px`} as any}/>)}</div>;
+ return <div className="space-y-6">{[140,200,260,200].map((h,i)=><div key={i} className="w-full rounded-xl skeleton" style={{height:`${h}px`,background:"rgba(255,255,255,0.06)"}}/>)}</div>;
 }
 
 function ResultsContent() {
