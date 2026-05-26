@@ -1,138 +1,60 @@
 import { Palette, Scissors, Shirt } from "lucide-react";
-import { Badge, Logo } from "@/components/ui";
 import { StyleResult } from "@/lib/types";
 
-// This is a server component — fetches data server-side for SEO + shareability
-async function getSharedResult(token: string): Promise<StyleResult | null> {
+async function getResult(token: string): Promise<StyleResult|null> {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/analysis/share/${token}`,
-      { cache: "no-store" }
-    );
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
+    const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/analysis/share/${token}`,{cache:"no-store"});
+    if(!r.ok) return null;
+    return r.json();
+  } catch { return null; }
 }
 
-export default async function SharePage({
-  params,
-}: {
-  params: { token: string };
-}) {
-  const result = await getSharedResult(params.token);
-
-  if (!result) {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center px-6"
-        style={{ background: "#0D0D0F", fontFamily: "DM Sans, sans-serif" }}
-      >
-        <div className="text-center">
-          <Logo size="md" />
-          <p className="mt-8 text-lg" style={{ fontFamily: "DM Serif Display, serif", color: "#F5F2ED" }}>
-            This style profile isn't available
-          </p>
-          <p className="mt-2 text-sm" style={{ color: "rgba(245,242,237,0.4)" }}>
-            The link may have expired or been removed.
-          </p>
-          <a
-            href="/"
-            className="inline-block mt-6 text-sm"
-            style={{ color: "#C9A96E" }}
-          >
-            Create your own →
-          </a>
-        </div>
+export default async function SharePage({params}:{params:{token:string}}) {
+  const result = await getResult(params.token);
+  if(!result) return (
+    <div style={{minHeight:"100vh",background:"#0A0A0F",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"DM Sans,sans-serif",padding:"1.5rem"}}>
+      <div style={{textAlign:"center",maxWidth:"22rem"}}>
+        <div style={{fontSize:"2rem",marginBottom:"1rem"}}>🔍</div>
+        <h2 style={{fontFamily:"DM Serif Display,serif",fontSize:"1.6rem",color:"#F5F2ED",marginBottom:"0.75rem"}}>Profile not found</h2>
+        <p style={{color:"rgba(245,242,237,0.4)",fontSize:"0.875rem",marginBottom:"1.5rem"}}>This link may have expired or been removed.</p>
+        <a href="/" style={{color:"#C9A96E",fontSize:"0.875rem"}}>Create your own →</a>
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        background: "radial-gradient(ellipse 70% 40% at 50% 0%, rgba(201,169,110,0.05) 0%, transparent 60%), #0D0D0F",
-        fontFamily: "DM Sans, sans-serif",
-      }}
-    >
+    <div style={{minHeight:"100vh",background:"#0A0A0F",fontFamily:"DM Sans,sans-serif"}}>
       {/* Header */}
-      <div
-        className="sticky top-0 z-10 px-6 py-4 flex items-center justify-between"
-        style={{
-          background: "rgba(13,13,15,0.9)",
-          backdropFilter: "blur(16px)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
-        }}
-      >
-        <Logo size="sm" />
-        <a href="/auth/register">
-          <button
-            className="px-4 py-2 rounded-xl text-sm font-medium transition-all"
-            style={{
-              background: "linear-gradient(135deg, #C9A96E, #E0C898)",
-              color: "#0D0D0F",
-            }}
-          >
-            Get my style profile
-          </button>
+      <div style={{position:"sticky",top:0,zIndex:10,padding:"1rem 1.5rem",display:"flex",alignItems:"center",justifyContent:"space-between",background:"rgba(10,10,15,0.9)",backdropFilter:"blur(16px)",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
+        <span style={{fontFamily:"DM Serif Display,serif",fontSize:"1.3rem",color:"#F5F2ED"}}>Styl<span style={{background:"linear-gradient(135deg,#C9A96E,#E0C898)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>AI</span></span>
+        <a href="/auth/register" style={{padding:"0.5rem 1.25rem",borderRadius:"0.75rem",background:"linear-gradient(135deg,#C9A96E,#E0C898)",color:"#0A0A0F",fontSize:"0.8rem",fontWeight:"600",textDecoration:"none"}}>
+          Get my profile
         </a>
       </div>
 
-      <div className="max-w-2xl mx-auto px-6 py-12 pb-24">
+      <div style={{maxWidth:"40rem",margin:"0 auto",padding:"3rem 1.5rem 6rem"}}>
         {/* Hero */}
-        <div className="text-center mb-12">
-          <Badge variant="gold">Shared Style Profile</Badge>
-          <h1
-            className="mt-5 mb-2"
-            style={{
-              fontFamily: "DM Serif Display, serif",
-              fontSize: "clamp(2rem, 5vw, 2.8rem)",
-              color: "#F5F2ED",
-              letterSpacing: "-0.025em",
-            }}
-          >
-            {result.color_season}
-          </h1>
-          <p className="text-sm" style={{ color: "rgba(245,242,237,0.4)" }}>
-            Personalized color, hair, and style analysis — powered by StylAI
-          </p>
+        <div style={{textAlign:"center",marginBottom:"3rem"}}>
+          <span style={{display:"inline-block",padding:"0.25rem 0.75rem",borderRadius:"99px",fontSize:"0.7rem",fontWeight:"600",background:"rgba(201,169,110,0.12)",border:"1px solid rgba(201,169,110,0.3)",color:"#C9A96E",letterSpacing:"0.1em",marginBottom:"1.25rem"}}>SHARED STYLE PROFILE</span>
+          <h1 style={{fontFamily:"DM Serif Display,serif",fontSize:"clamp(2rem,5vw,2.8rem)",color:"#F5F2ED",letterSpacing:"-0.025em",marginBottom:"0.5rem"}}>{result.color_season}</h1>
+          <p style={{color:"rgba(245,242,237,0.4)",fontSize:"0.875rem"}}>Personalized by StylAI</p>
         </div>
 
-        {/* Color palette */}
-        {result.recommended_colors && result.recommended_colors.length > 0 && (
-          <div className="mb-10">
-            <div className="flex items-center gap-3 mb-5">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ background: "rgba(201,169,110,0.1)", border: "1px solid rgba(201,169,110,0.2)" }}
-              >
-                <Palette size={15} style={{ color: "#C9A96E" }} />
+        {/* Colors */}
+        {result.recommended_colors&&result.recommended_colors.length>0&&(
+          <div style={{marginBottom:"2.5rem"}}>
+            <div style={{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"1.25rem"}}>
+              <div style={{width:"2rem",height:"2rem",borderRadius:"0.625rem",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.2)"}}>
+                <Palette size={14} color="#C9A96E"/>
               </div>
-              <h2
-                className="text-base"
-                style={{ fontFamily: "DM Serif Display, serif", color: "#F5F2ED" }}
-              >
-                Signature color palette
-              </h2>
+              <h2 style={{fontFamily:"DM Serif Display,serif",fontSize:"1.1rem",color:"#F5F2ED"}}>Color palette</h2>
             </div>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-              {result.recommended_colors.map((c) => (
-                <div key={c.hex} className="text-center">
-                  <div
-                    className="w-full aspect-square rounded-2xl mb-2"
-                    style={{
-                      background: c.hex,
-                      boxShadow: `0 4px 16px ${c.hex}40`,
-                    }}
-                  />
-                  <p className="text-xs truncate" style={{ color: "#F5F2ED" }}>
-                    {c.name}
-                  </p>
-                  <p className="text-xs font-mono" style={{ color: "rgba(245,242,237,0.3)" }}>
-                    {c.hex}
-                  </p>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"0.75rem"}}>
+              {result.recommended_colors.slice(0,6).map(c=>(
+                <div key={c.hex} style={{textAlign:"center"}}>
+                  <div style={{width:"100%",aspectRatio:"1",borderRadius:"1rem",background:c.hex,marginBottom:"0.4rem",boxShadow:`0 4px 16px ${c.hex}40`}}/>
+                  <p style={{fontSize:"0.7rem",color:"#F5F2ED",fontWeight:"500"}}>{c.name}</p>
+                  <p style={{fontSize:"0.65rem",color:"rgba(245,242,237,0.35)",fontFamily:"monospace"}}>{c.hex}</p>
                 </div>
               ))}
             </div>
@@ -140,77 +62,39 @@ export default async function SharePage({
         )}
 
         {/* Hairstyles */}
-        {result.hairstyle_recommendations && result.hairstyle_recommendations.length > 0 && (
-          <div className="mb-10">
-            <div className="flex items-center gap-3 mb-5">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ background: "rgba(201,169,110,0.1)", border: "1px solid rgba(201,169,110,0.2)" }}
-              >
-                <Scissors size={15} style={{ color: "#C9A96E" }} />
+        {result.hairstyle_recommendations&&result.hairstyle_recommendations.length>0&&(
+          <div style={{marginBottom:"2.5rem"}}>
+            <div style={{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"1.25rem"}}>
+              <div style={{width:"2rem",height:"2rem",borderRadius:"0.625rem",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.2)"}}>
+                <Scissors size={14} color="#C9A96E"/>
               </div>
-              <h2
-                className="text-base"
-                style={{ fontFamily: "DM Serif Display, serif", color: "#F5F2ED" }}
-              >
-                Hairstyle guide
-              </h2>
+              <h2 style={{fontFamily:"DM Serif Display,serif",fontSize:"1.1rem",color:"#F5F2ED"}}>Hairstyle guide</h2>
             </div>
-            <div className="space-y-3">
-              {result.hairstyle_recommendations.slice(0, 3).map((r) => (
-                <div
-                  key={r.name}
-                  className="p-4 rounded-xl"
-                  style={{
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(255,255,255,0.07)",
-                  }}
-                >
-                  <p className="text-sm font-medium mb-1" style={{ color: "#F5F2ED" }}>
-                    {r.name}
-                  </p>
-                  <p className="text-xs leading-relaxed" style={{ color: "rgba(245,242,237,0.45)" }}>
-                    {r.reason}
-                  </p>
+            <div style={{display:"flex",flexDirection:"column",gap:"0.5rem"}}>
+              {result.hairstyle_recommendations.slice(0,3).map(r=>(
+                <div key={r.name} style={{padding:"1rem",borderRadius:"1rem",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)"}}>
+                  <p style={{fontSize:"0.875rem",fontWeight:"500",color:"#F5F2ED",marginBottom:"0.25rem"}}>{r.name}</p>
+                  <p style={{fontSize:"0.75rem",color:"rgba(245,242,237,0.45)",lineHeight:"1.5"}}>{r.reason}</p>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Outfit directions */}
-        {result.outfit_directions && result.outfit_directions.length > 0 && (
-          <div className="mb-12">
-            <div className="flex items-center gap-3 mb-5">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ background: "rgba(201,169,110,0.1)", border: "1px solid rgba(201,169,110,0.2)" }}
-              >
-                <Shirt size={15} style={{ color: "#C9A96E" }} />
+        {/* Outfits */}
+        {result.outfit_directions&&result.outfit_directions.length>0&&(
+          <div style={{marginBottom:"3rem"}}>
+            <div style={{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"1.25rem"}}>
+              <div style={{width:"2rem",height:"2rem",borderRadius:"0.625rem",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.2)"}}>
+                <Shirt size={14} color="#C9A96E"/>
               </div>
-              <h2
-                className="text-base"
-                style={{ fontFamily: "DM Serif Display, serif", color: "#F5F2ED" }}
-              >
-                Outfit direction
-              </h2>
+              <h2 style={{fontFamily:"DM Serif Display,serif",fontSize:"1.1rem",color:"#F5F2ED"}}>Outfit direction</h2>
             </div>
-            <div className="space-y-3">
-              {result.outfit_directions.slice(0, 2).map((r) => (
-                <div
-                  key={r.name}
-                  className="p-4 rounded-xl"
-                  style={{
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(255,255,255,0.07)",
-                  }}
-                >
-                  <p className="text-sm font-medium mb-1" style={{ color: "#F5F2ED" }}>
-                    {r.name}
-                  </p>
-                  <p className="text-xs leading-relaxed" style={{ color: "rgba(245,242,237,0.45)" }}>
-                    {r.reason}
-                  </p>
+            <div style={{display:"flex",flexDirection:"column",gap:"0.5rem"}}>
+              {result.outfit_directions.slice(0,2).map(r=>(
+                <div key={r.name} style={{padding:"1rem",borderRadius:"1rem",background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)"}}>
+                  <p style={{fontSize:"0.875rem",fontWeight:"500",color:"#F5F2ED",marginBottom:"0.25rem"}}>{r.name}</p>
+                  <p style={{fontSize:"0.75rem",color:"rgba(245,242,237,0.45)",lineHeight:"1.5"}}>{r.reason}</p>
                 </div>
               ))}
             </div>
@@ -218,37 +102,11 @@ export default async function SharePage({
         )}
 
         {/* CTA */}
-        <div
-          className="text-center p-10 rounded-3xl"
-          style={{
-            background: "linear-gradient(135deg, rgba(201,169,110,0.07) 0%, rgba(13,13,15,0) 100%)",
-            border: "1px solid rgba(201,169,110,0.15)",
-          }}
-        >
-          <h3
-            className="mb-3"
-            style={{
-              fontFamily: "DM Serif Display, serif",
-              fontSize: "1.6rem",
-              color: "#F5F2ED",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Get your own style profile
-          </h3>
-          <p className="text-sm mb-6" style={{ color: "rgba(245,242,237,0.4)" }}>
-            Free, instant, and built around your actual features.
-          </p>
-          <a href="/auth/register">
-            <button
-              className="px-8 py-3 rounded-xl text-sm font-medium"
-              style={{
-                background: "linear-gradient(135deg, #C9A96E, #E0C898)",
-                color: "#0D0D0F",
-              }}
-            >
-              Create my free profile →
-            </button>
+        <div style={{textAlign:"center",padding:"3rem 2rem",borderRadius:"1.5rem",background:"linear-gradient(135deg,rgba(201,169,110,0.08) 0%,rgba(124,111,205,0.04) 100%)",border:"1px solid rgba(201,169,110,0.15)"}}>
+          <h3 style={{fontFamily:"DM Serif Display,serif",fontSize:"1.6rem",color:"#F5F2ED",marginBottom:"0.75rem"}}>Get your own style profile</h3>
+          <p style={{fontSize:"0.875rem",color:"rgba(245,242,237,0.4)",marginBottom:"1.5rem"}}>Free, instant, built around your actual features.</p>
+          <a href="/auth/register" style={{display:"inline-block",padding:"0.875rem 2rem",borderRadius:"0.875rem",background:"linear-gradient(135deg,#C9A96E,#E0C898)",color:"#0A0A0F",fontWeight:"600",fontSize:"0.875rem",textDecoration:"none"}}>
+            Create my free profile →
           </a>
         </div>
       </div>

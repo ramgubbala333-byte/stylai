@@ -1,372 +1,183 @@
 "use client";
-
 import Link from "next/link";
-import { ArrowRight, Scan, Palette, Scissors, Shirt } from "lucide-react";
-import { Logo, Badge, Button } from "@/components/ui";
+import { motion } from "framer-motion";
+import { ArrowRight, Palette, Scissors, Shirt, Scan, Sparkles, Shield, Zap, Star } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
+import { Logo, AnimatedButton, GlassCard, StatusBadge, PageTransition } from "@/components/ui";
+
+const fadeUp = (delay=0) => ({ initial:{opacity:0,y:24}, animate:{opacity:1,y:0}, transition:{duration:0.6,ease:[0.22,1,0.36,1],delay} });
 
 export default function LandingPage() {
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        background: "#0D0D0F",
-        fontFamily: "DM Sans, sans-serif",
-      }}
-    >
+    <div className="min-h-screen" style={{background:"#0A0A0F"}}>
       <Navbar />
 
-      {/* ── Hero ───────────────────────────────────────────────────────────── */}
-      <section
-        className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-16 overflow-hidden"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 60% at 50% 40%, rgba(201,169,110,0.07) 0%, transparent 70%), #0D0D0F",
-        }}
-      >
-        {/* Decorative grid lines */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)",
-            backgroundSize: "80px 80px",
-            maskImage: "radial-gradient(ellipse 60% 60% at 50% 40%, black, transparent)",
-          }}
-        />
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-5 pt-16 overflow-hidden">
+        {/* Animated gradient orbs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <motion.div animate={{scale:[1,1.2,1],opacity:[0.15,0.25,0.15]}} transition={{duration:8,repeat:Infinity,ease:"easeInOut"}}
+            className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full"
+            style={{background:"radial-gradient(circle,rgba(201,169,110,0.12) 0%,transparent 70%)",filter:"blur(40px)"}} />
+          <motion.div animate={{scale:[1.1,1,1.1],opacity:[0.1,0.2,0.1]}} transition={{duration:10,repeat:Infinity,ease:"easeInOut",delay:2}}
+            className="absolute bottom-1/3 right-1/4 w-[500px] h-[500px] rounded-full"
+            style={{background:"radial-gradient(circle,rgba(124,111,205,0.1) 0%,transparent 70%)",filter:"blur(50px)"}} />
+        </div>
 
-        {/* Floating orbs */}
-        <div
-          className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full pointer-events-none"
-          style={{
-            background: "radial-gradient(circle, rgba(201,169,110,0.05) 0%, transparent 70%)",
-            filter: "blur(40px)",
-          }}
-        />
-        <div
-          className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full pointer-events-none"
-          style={{
-            background: "radial-gradient(circle, rgba(138,143,168,0.04) 0%, transparent 70%)",
-            filter: "blur(60px)",
-          }}
-        />
+        {/* Grid overlay */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          backgroundImage:"linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)",
+          backgroundSize:"72px 72px",
+          maskImage:"radial-gradient(ellipse 70% 70% at 50% 40%,black,transparent)"
+        }} />
 
         <div className="relative z-10 max-w-4xl mx-auto text-center">
-          {/* Pill badge */}
-          <div className="flex justify-center mb-8 animate-[fadeUp_0.6s_ease_forwards]">
-            <Badge variant="gold">AI-Powered Personal Styling</Badge>
-          </div>
+          <motion.div {...fadeUp(0)} className="flex items-center justify-center gap-2 mb-8">
+            <StatusBadge status="gold" label="AI-Powered Personal Styling" />
+          </motion.div>
 
-          {/* Headline */}
-          <h1
-            className="mb-6 animate-[fadeUp_0.6s_ease_0.1s_forwards] opacity-0"
-            style={{
-              fontFamily: "DM Serif Display, serif",
-              fontSize: "clamp(2.8rem, 7vw, 5.5rem)",
-              lineHeight: "1.05",
-              letterSpacing: "-0.03em",
-              color: "#F5F2ED",
-            }}
-          >
+          <motion.h1 {...fadeUp(0.1)} className="mb-6 leading-[1.05]"
+            style={{fontFamily:"DM Serif Display,serif",fontSize:"clamp(3rem,8vw,5.5rem)",letterSpacing:"-0.03em",color:"#F5F2ED"}}>
             Your style, finally{" "}
-            <em
-              style={{
-                fontStyle: "italic",
-                background: "linear-gradient(135deg, #C9A96E 0%, #E0C898 60%, #9A7A48 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
+            <em style={{fontStyle:"italic",background:"linear-gradient(135deg,#C9A96E 0%,#E0C898 50%,#9A7A48 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>
               understood.
             </em>
-          </h1>
+          </motion.h1>
 
-          {/* Sub */}
-          <p
-            className="text-lg max-w-2xl mx-auto mb-10 animate-[fadeUp_0.6s_ease_0.2s_forwards] opacity-0"
-            style={{ color: "rgba(245,242,237,0.5)", lineHeight: "1.7" }}
-          >
-            Upload a selfie. Our AI reads your face shape, skin tone, undertone, and hair — then delivers
-            hyper-personalized color palettes, hairstyle recommendations, beard guidance, and outfit
-            directions built specifically for you.
-          </p>
+          <motion.p {...fadeUp(0.2)} className="text-lg max-w-2xl mx-auto mb-10 leading-relaxed" style={{color:"rgba(245,242,237,0.5)"}}>
+            Upload a selfie. Our AI analyzes your face shape, skin tone, undertone, and hair — then delivers hyper-personalized color palettes, hairstyles, beard guidance, and outfit directions built for you.
+          </motion.p>
 
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-[fadeUp_0.6s_ease_0.3s_forwards] opacity-0">
+          <motion.div {...fadeUp(0.3)} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
             <Link href="/auth/register">
-              <Button size="lg" className="group">
+              <AnimatedButton size="lg" className="group">
                 Discover your style
                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-              </Button>
+              </AnimatedButton>
             </Link>
             <Link href="/auth/login">
-              <Button variant="secondary" size="lg">
-                Sign in
-              </Button>
+              <AnimatedButton variant="secondary" size="lg">Sign in</AnimatedButton>
             </Link>
-          </div>
+          </motion.div>
 
-          {/* Social proof */}
-          <p
-            className="mt-10 text-xs animate-[fadeUp_0.6s_ease_0.4s_forwards] opacity-0"
-            style={{ color: "rgba(245,242,237,0.25)", letterSpacing: "0.08em" }}
-          >
-            NO SUBSCRIPTION · NO CREDIT CARD · INSTANT RESULTS
-          </p>
+          {/* Social proof strip */}
+          <motion.div {...fadeUp(0.4)} className="flex items-center justify-center gap-6 flex-wrap">
+            {["No subscription","Instant results","Privacy first"].map((t,i)=>(
+              <div key={i} className="flex items-center gap-1.5 text-xs" style={{color:"rgba(245,242,237,0.3)"}}>
+                <div className="w-1 h-1 rounded-full" style={{background:"#C9A96E"}} />{t}
+              </div>
+            ))}
+          </motion.div>
         </div>
 
         {/* Scroll indicator */}
-        <div
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-[fadeIn_1s_ease_1s_forwards] opacity-0"
-        >
-          <div
-            className="w-px h-12"
-            style={{
-              background: "linear-gradient(to bottom, rgba(201,169,110,0.5), transparent)",
-            }}
-          />
-        </div>
+        <motion.div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+          animate={{opacity:[0.3,0.7,0.3]}} transition={{duration:2,repeat:Infinity}}>
+          <div className="w-px h-14" style={{background:"linear-gradient(to bottom,rgba(201,169,110,0.5),transparent)"}} />
+        </motion.div>
       </section>
 
-      {/* ── How it works ───────────────────────────────────────────────────── */}
-      <section className="py-32 px-6 max-w-5xl mx-auto">
-        <div className="text-center mb-20">
-          <p
-            className="text-xs tracking-widest mb-4"
-            style={{ color: "#C9A96E", letterSpacing: "0.2em" }}
-          >
-            THE PROCESS
-          </p>
-          <h2
-            style={{
-              fontFamily: "DM Serif Display, serif",
-              fontSize: "clamp(2rem, 4vw, 3rem)",
-              color: "#F5F2ED",
-              letterSpacing: "-0.02em",
-            }}
-          >
+      {/* ── How it works ──────────────────────────────────────────────────── */}
+      <section className="py-28 px-5 max-w-5xl mx-auto">
+        <motion.div initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{duration:0.6}} className="text-center mb-16">
+          <p className="text-xs tracking-widest mb-3" style={{color:"#C9A96E",letterSpacing:"0.2em"}}>THE PROCESS</p>
+          <h2 style={{fontFamily:"DM Serif Display,serif",fontSize:"clamp(2rem,4vw,3rem)",color:"#F5F2ED",letterSpacing:"-0.02em"}}>
             Three steps to your style profile
           </h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {[
-            {
-              num: "01",
-              title: "Upload a selfie",
-              body: "A clear, front-facing photo in natural light. That's all we need to begin.",
-              icon: "📸",
-            },
-            {
-              num: "02",
-              title: "AI reads your features",
-              body: "We analyze face shape, skin tone, undertone, contrast, hair, and beard growth — in seconds.",
-              icon: "🔬",
-            },
-            {
-              num: "03",
-              title: "Get your style profile",
-              body: "Your personal color season, hairstyle guide, beard style, and outfit direction — all explained.",
-              icon: "✨",
-            },
-          ].map((step, i) => (
-            <div
-              key={i}
-              className="relative p-8 rounded-2xl group"
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.07)",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "rgba(201,169,110,0.05)";
-                (e.currentTarget as HTMLElement).style.borderColor = "rgba(201,169,110,0.2)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)";
-                (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.07)";
-              }}
-            >
-              <div
-                className="text-4xl mb-5"
-              >
-                {step.icon}
-              </div>
-              <div
-                className="absolute top-6 right-6 text-xs font-mono"
-                style={{ color: "rgba(201,169,110,0.4)" }}
-              >
-                {step.num}
-              </div>
-              <h3
-                className="text-lg mb-3"
-                style={{ fontFamily: "DM Serif Display, serif", color: "#F5F2ED" }}
-              >
-                {step.title}
-              </h3>
-              <p className="text-sm leading-relaxed" style={{ color: "rgba(245,242,237,0.45)" }}>
-                {step.body}
-              </p>
-            </div>
+            {num:"01",title:"Upload a selfie",body:"A clear front-facing photo in natural light. That is all we need to begin.",emoji:"📸"},
+            {num:"02",title:"AI reads your features",body:"We analyze face shape, skin tone, undertone, contrast, and hair — in seconds.",emoji:"🔬"},
+            {num:"03",title:"Get your style profile",body:"Color season, hairstyle guide, beard style, outfit direction — all explained.",emoji:"✨"},
+          ].map((s,i)=>(
+            <motion.div key={i} initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{duration:0.5,delay:i*0.12}}>
+              <GlassCard hover glow="gold" className="p-7 relative h-full">
+                <div className="text-3xl mb-5">{s.emoji}</div>
+                <div className="absolute top-5 right-5 text-xs font-mono" style={{color:"rgba(201,169,110,0.4)"}}>{s.num}</div>
+                <h3 className="text-base mb-2" style={{fontFamily:"DM Serif Display,serif",color:"#F5F2ED"}}>{s.title}</h3>
+                <p className="text-sm leading-relaxed" style={{color:"rgba(245,242,237,0.45)"}}>{s.body}</p>
+              </GlassCard>
+            </motion.div>
           ))}
         </div>
       </section>
 
-      {/* ── Feature grid ───────────────────────────────────────────────────── */}
-      <section
-        className="py-24 px-6"
-        style={{
-          background: "radial-gradient(ellipse 80% 50% at 50% 50%, rgba(201,169,110,0.04) 0%, transparent 70%)",
-        }}
-      >
+      {/* ── Features ──────────────────────────────────────────────────────── */}
+      <section className="py-20 px-5" style={{background:"radial-gradient(ellipse 80% 50% at 50% 50%,rgba(201,169,110,0.04) 0%,transparent 70%)"}}>
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <p
-              className="text-xs tracking-widest mb-4"
-              style={{ color: "#C9A96E", letterSpacing: "0.2em" }}
-            >
-              WHAT YOU GET
-            </p>
-            <h2
-              style={{
-                fontFamily: "DM Serif Display, serif",
-                fontSize: "clamp(2rem, 4vw, 3rem)",
-                color: "#F5F2ED",
-                letterSpacing: "-0.02em",
-              }}
-            >
-              Everything in one profile
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <motion.div initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}} className="text-center mb-14">
+            <p className="text-xs tracking-widest mb-3" style={{color:"#C9A96E",letterSpacing:"0.2em"}}>WHAT YOU GET</p>
+            <h2 style={{fontFamily:"DM Serif Display,serif",fontSize:"clamp(2rem,4vw,3rem)",color:"#F5F2ED",letterSpacing:"-0.02em"}}>Everything in one profile</h2>
+          </motion.div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              {
-                icon: Palette,
-                title: "Color Season",
-                body: "Your exact seasonal archetype — Deep Winter, True Autumn, and more. Colors that work and colors to avoid.",
-              },
-              {
-                icon: Scissors,
-                title: "Hairstyles",
-                body: "Cuts that flatter your face shape. What to ask for and what to avoid at the barber or salon.",
-              },
-              {
-                icon: Scan,
-                title: "Beard Guide",
-                body: "Beard styles mapped to your face shape and actual growth pattern. For men who want structure.",
-              },
-              {
-                icon: Shirt,
-                title: "Outfit Direction",
-                body: "Necklines, fits, fabrics, and patterns that work for your proportions. Practical and specific.",
-              },
-            ].map(({ icon: Icon, title, body }, i) => (
-              <div
-                key={i}
-                className="p-6 rounded-2xl"
-                style={{
-                  background: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(255,255,255,0.07)",
-                }}
-              >
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center mb-5"
-                  style={{
-                    background: "rgba(201,169,110,0.1)",
-                    border: "1px solid rgba(201,169,110,0.2)",
-                  }}
-                >
-                  <Icon size={18} style={{ color: "#C9A96E" }} />
-                </div>
-                <h3
-                  className="text-sm font-medium mb-2"
-                  style={{ color: "#F5F2ED" }}
-                >
-                  {title}
-                </h3>
-                <p className="text-xs leading-relaxed" style={{ color: "rgba(245,242,237,0.4)" }}>
-                  {body}
-                </p>
-              </div>
+              {icon:Palette,title:"Color Season",body:"Your exact seasonal archetype — colors that work and colors to avoid."},
+              {icon:Scissors,title:"Hairstyle Guide",body:"Cuts that flatter your face shape. What to ask for at the barber or salon."},
+              {icon:Scan,title:"Beard Guide",body:"Beard styles mapped to your face shape and actual growth pattern."},
+              {icon:Shirt,title:"Outfit Direction",body:"Necklines, fits, fabrics that work for your proportions. Practical and specific."},
+            ].map(({icon:Icon,title,body},i)=>(
+              <motion.div key={i} initial={{opacity:0,y:16}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*0.08}}>
+                <GlassCard hover className="p-6 h-full">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-5" style={{background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.2)"}}>
+                    <Icon size={18} style={{color:"#C9A96E"}} />
+                  </div>
+                  <h3 className="text-sm font-semibold mb-2" style={{color:"#F5F2ED"}}>{title}</h3>
+                  <p className="text-xs leading-relaxed" style={{color:"rgba(245,242,237,0.42)"}}>{body}</p>
+                </GlassCard>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Final CTA ──────────────────────────────────────────────────────── */}
-      <section className="py-32 px-6">
-        <div
-          className="max-w-2xl mx-auto text-center p-16 rounded-3xl relative overflow-hidden"
-          style={{
-            background: "linear-gradient(135deg, rgba(201,169,110,0.08) 0%, rgba(13,13,15,0) 100%)",
-            border: "1px solid rgba(201,169,110,0.15)",
-          }}
-        >
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: "radial-gradient(ellipse 60% 50% at 50% 0%, rgba(201,169,110,0.12), transparent)",
-            }}
-          />
-          <p
-            className="text-xs tracking-widest mb-6 relative z-10"
-            style={{ color: "#C9A96E", letterSpacing: "0.2em" }}
-          >
-            START FOR FREE
-          </p>
-          <h2
-            className="mb-4 relative z-10"
-            style={{
-              fontFamily: "DM Serif Display, serif",
-              fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
-              color: "#F5F2ED",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Ready to see what suits you?
-          </h2>
-          <p
-            className="text-sm mb-10 relative z-10"
-            style={{ color: "rgba(245,242,237,0.45)", lineHeight: "1.7" }}
-          >
-            One selfie. Two minutes. A complete style profile built around your actual features — not generic advice.
-          </p>
-          <Link href="/auth/register" className="relative z-10 inline-block">
-            <Button size="lg" className="group">
-              Create your style profile
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </Link>
+      {/* ── Trust strip ───────────────────────────────────────────────────── */}
+      <section className="py-16 px-5 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {[
+            {icon:Zap,title:"30-second analysis",body:"CV pipeline processes your image instantly"},
+            {icon:Shield,title:"Private by design",body:"Your photo is never shared or sold"},
+            {icon:Star,title:"25+ recommendations",body:"Colors, cuts, beard styles, and outfit direction"},
+          ].map(({icon:Icon,title,body},i)=>(
+            <motion.div key={i} initial={{opacity:0,y:16}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{delay:i*0.1}}
+              className="flex items-start gap-4 p-5 rounded-2xl" style={{background:"rgba(255,255,255,0.025)",border:"1px solid rgba(255,255,255,0.06)"}}>
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style={{background:"rgba(201,169,110,0.1)",border:"1px solid rgba(201,169,110,0.15)"}}>
+                <Icon size={16} style={{color:"#C9A96E"}} />
+              </div>
+              <div>
+                <p className="text-sm font-medium mb-0.5" style={{color:"#F5F2ED"}}>{title}</p>
+                <p className="text-xs" style={{color:"rgba(245,242,237,0.4)"}}>{body}</p>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </section>
 
-      {/* ── Footer ─────────────────────────────────────────────────────────── */}
-      <footer
-        className="py-10 px-6 text-center"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
-      >
-        <Logo size="sm" />
-        <p
-          className="mt-4 text-xs"
-          style={{ color: "rgba(245,242,237,0.2)" }}
-        >
-          © {new Date().getFullYear()} StylAI. Built for people who care about dressing well.
-        </p>
-      </footer>
+      {/* ── Final CTA ─────────────────────────────────────────────────────── */}
+      <section className="py-28 px-5">
+        <motion.div initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}}
+          className="max-w-2xl mx-auto text-center p-14 rounded-3xl relative overflow-hidden"
+          style={{background:"linear-gradient(135deg,rgba(201,169,110,0.08) 0%,rgba(124,111,205,0.04) 100%)",border:"1px solid rgba(201,169,110,0.15)"}}>
+          <div className="absolute inset-0" style={{background:"radial-gradient(ellipse 60% 50% at 50% 0%,rgba(201,169,110,0.1),transparent)",borderRadius:"inherit"}} />
+          <div className="relative z-10">
+            <p className="text-xs tracking-widest mb-5" style={{color:"#C9A96E",letterSpacing:"0.2em"}}>START FOR FREE</p>
+            <h2 className="mb-3" style={{fontFamily:"DM Serif Display,serif",fontSize:"clamp(1.8rem,4vw,2.8rem)",color:"#F5F2ED",letterSpacing:"-0.02em"}}>Ready to see what suits you?</h2>
+            <p className="text-sm mb-9" style={{color:"rgba(245,242,237,0.45)"}}>One selfie. Two minutes. A complete style profile built around your actual features.</p>
+            <Link href="/auth/register">
+              <AnimatedButton size="lg" className="group">
+                Create your style profile
+                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              </AnimatedButton>
+            </Link>
+          </div>
+        </motion.div>
+      </section>
 
-      {/* Keyframes */}
-      <style jsx global>{`
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-      `}</style>
+      {/* ── Footer ────────────────────────────────────────────────────────── */}
+      <footer className="py-10 px-5 text-center" style={{borderTop:"1px solid rgba(255,255,255,0.05)"}}>
+        <Logo size="sm" />
+        <p className="mt-4 text-xs" style={{color:"rgba(245,242,237,0.2)"}}>© {new Date().getFullYear()} StylAI. Built for people who care about dressing well.</p>
+      </footer>
     </div>
   );
 }
