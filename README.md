@@ -18,13 +18,11 @@ A production-grade AI-powered personal styling and grooming platform for men and
 stylai/
 ├── apps/
 │   ├── web/          # Next.js 14 frontend (App Router)
-│   └── api/          # Python FastAPI backend
-├── packages/
-│   ├── shared-types/ # TypeScript types shared across apps
-│   └── ui-kit/       # Shared React component library (future)
-├── docs/             # Architecture decisions, API docs
-├── scripts/          # Dev, seed, deploy scripts
-└── infra/            # Docker, nginx, cloud configs
+│   └── api/          # Python FastAPI backend (Alembic migrations in apps/api/alembic)
+├── infra/
+│   └── postgres/     # Postgres init SQL, mounted by docker-compose on first boot
+├── docker-compose.yml
+└── DEPLOYMENT.md     # Production deployment guide (Railway, Cloudflare R2, Sentry, PostHog)
 ```
 
 ---
@@ -124,6 +122,11 @@ npm install
 npm run dev
 ```
 
+### Production
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the full production setup: Railway hosting,
+Cloudflare R2 photo storage, Sentry error monitoring, and PostHog analytics.
+
 ---
 
 ## Key Design Principles
@@ -150,4 +153,4 @@ FastAPI auto-generates interactive docs at `http://localhost:8000/docs` (Swagger
 
 ## License
 
-Private / Proprietary — All rights reserved.
+MIT. See [LICENSE](LICENSE).
