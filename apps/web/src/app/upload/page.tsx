@@ -129,7 +129,7 @@ function UploadContent() {
 
               {phase==="idle"&&(
                 <motion.div key="dropzone" initial={{opacity:0}} animate={{opacity:1}}>
-                  <motion.div {...getRootProps()} className="rounded-2xl transition-all duration-200 cursor-pointer flex flex-col items-center justify-center text-center p-14"
+                  <motion.div {...(getRootProps() as any)} className="rounded-2xl transition-all duration-200 cursor-pointer flex flex-col items-center justify-center text-center p-14"
                     animate={{borderColor:isDragActive?"rgba(201,169,110,0.5)":"rgba(255,255,255,0.1)",background:isDragActive?"rgba(201,169,110,0.05)":"rgba(255,255,255,0.025)"}}>
                     <input {...getInputProps()}/>
                     <motion.div animate={{scale:isDragActive?1.1:1}} transition={{duration:0.2}}

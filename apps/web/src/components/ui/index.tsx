@@ -1,5 +1,5 @@
 "use client";
-import { forwardRef, ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
+import { forwardRef, ButtonHTMLAttributes, CSSProperties, InputHTMLAttributes, ReactNode } from "react";
 import { motion, HTMLMotionProps } from "framer-motion";
 import { Loader2 } from "lucide-react";
 
@@ -46,13 +46,13 @@ export const AnimatedButton = forwardRef<HTMLButtonElement, BtnProps>(
 AnimatedButton.displayName = "AnimatedButton";
 
 // ── GlassCard ─────────────────────────────────────────────────────────────────
-interface CardProps { children: ReactNode; className?: string; hover?: boolean; glow?: "gold"|"violet"|"none"; onClick?: () => void; }
-export function GlassCard({ children, className, hover=false, glow="none", onClick }: CardProps) {
+interface CardProps { children: ReactNode; className?: string; hover?: boolean; glow?: "gold"|"violet"|"none"; onClick?: () => void; style?: CSSProperties; }
+export function GlassCard({ children, className, hover=false, glow="none", onClick, style }: CardProps) {
   const glows = { gold:"hover:shadow-[0_0_30px_rgba(201,169,110,0.12)]", violet:"hover:shadow-[0_0_30px_rgba(124,111,205,0.12)]", none:"" };
   return (
     <motion.div onClick={onClick} whileHover={hover ? {y:-2,scale:1.005} : {}} transition={{duration:0.2}}
       className={cn("rounded-2xl border border-white/8 transition-all duration-300", hover&&"cursor-pointer", glow!=="none"&&glows[glow], className)}
-      style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(16px)"}}>
+      style={{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(16px)",...style}}>
       {children}
     </motion.div>
   );
